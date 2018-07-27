@@ -12,6 +12,7 @@ def raiz_funcion(inicio,fin,cantidad):
     xi = 0.00000020
     fxi = 0.00000020
     error = 0.00000020
+    erroract = 0.00000002
     division = 0.00000000
     xii = 0.00000000
     cont = 0
@@ -24,13 +25,14 @@ def raiz_funcion(inicio,fin,cantidad):
     
     a = inicio
     b = division
-    while cont < 10:
+    while erroract > error:
         fa = calculo(a)
         fb = calculo(b)
 
         if ((fa*fb) < 0):
             xi = (a+b)/2
             fxi = calculo(xi)
+            erroract = (xi-xii)
             if (fxi == 0):
                 print ("La raiz es: ",fxi,"con un error del: ",error)
                 return
@@ -46,9 +48,9 @@ def raiz_funcion(inicio,fin,cantidad):
             b = b + division
         else:
             print("La raiz no esta en el intervalo")
-            encontre = true
         cont= cont+1
     print("El valor mas cercano a la raiz es: ",xi," con un error de: ",error)
+    print("Cantidad de iteraciones para encontrar valor es: ", cont)
 
 if __name__ == '__main__':
     a = 1.10
