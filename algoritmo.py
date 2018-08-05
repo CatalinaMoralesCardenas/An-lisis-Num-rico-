@@ -25,7 +25,7 @@ def raiz_funcion(inicio,fin,cantidad):
     
     a = inicio
     b = division
-    while erroract > error:
+    while erroract < error:
         fa = calculo(a)
         fb = calculo(b)
 
