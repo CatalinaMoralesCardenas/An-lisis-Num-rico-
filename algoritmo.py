@@ -32,7 +32,7 @@ def raiz_funcion(inicio,fin,cantidad):
         if ((fa*fb) < 0):
             xi = (a+b)/2
             fxi = calculo(xi)
-            erroract = (xi-xii)
+            erroract = (xii-xi)
             if (fxi == 0):
                 print ("La raiz es: ",fxi,"con un error del: ",error)
                 return
