@@ -1,0 +1,110 @@
+---
+title: "Interpolacion"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+***
+## Interpolación Lagrange Baricéntrico 
+
+El objetivo del taller es dibujar la figura de un pato por medio de la interpolación en el método de Lagrange Baricéntrico, el cual interpola una función en todo un intervalo con un polinomio interpolante.
+
+![](http://www.mty.itesm.mx/dtie/deptos/cb/cb00854-1/Tareas/pato.jpg){width=50%}
+
+
+El primer paso para dibujar el pato, es encontrar los puntos del contorno del pato, para esto se uso la herramienta [Geogebra](https://www.geogebra.org/geometry), esta nos permitirá sacar las coordenadas exactas de la imagen. 
+
+![](C:\Users\Admin\Pictures\puntos.jpg){width=50%}
+
+
+
+
+
+```{r}
+
+x <- c ( 0.2, 0.6, 1 , 1.2, 1.8, 2.1, 2.5, 3.1, 4.2, 5, 5.4, 5.8, 5.5, 5.1, 4.7, 4.2, 3.7, 3.6, 3.5, 3.4, 3.2, 3, 2.9, 2.7, 2.4, 2, 2.1, 2.3, 2.4, 2, 1.8, 0.9, 0.5, 0.3, 0.2)
+
+y <- c ( 3.2, 3.4, 3.8, 3.8, 3.6, 3.6, 3.6, 3.7, 3.4, 3, 2.9, 2.7, 2.6, 2.6, 2.6, 2.4, 2.4, 2.2, 2, 1.7, 1.3, 1, 0.8, 0.5, 0.3, 0.2, 0.6, 2, 2.7, 2.9, 3.1, 3.2, 3.1, 3.1, 3.2)
+
+```
+
+
+Luego aplicamos el método:
+
+***
+#### Desarrollo de obtenciÃ³n del polinomio de Lagrange BaricÃ©ntrico:
+
+1.	Formula teórica para hallar el polinomio (W):
+      * Siendo Xn y Yn los valores de X y Y de los puntos escogidos.
+      * Siendo X un valor del nodo a evaluar.
+      * Siendo Wn y Vn los pesos baricentricos en n posición.
+            
+            $$ f(x) = \sum_{n=1}^\infty (\frac{Wn}{X-Xn}*Yn)$$
+            $$ g(x) = \sum_{n=1}^\infty (\frac{Vn}{X-Xn})$$
+            $$ W = \frac{f(x)}{g(x)}$$
+            
+
+2.	Abrir la sumatoria f(x) respecto al peso baricentrico:
+      * Ejemplo con W en la posición 0:
+           
+           $$ Wo = \frac{1}{Xo-X1}Y1 + \frac{1}{Xo-X2}Y2 + \frac{1}{Xo-X3}Y3 + ...$$
+           $$ Wo = \frac{3.4}{0.2-0.6} + \frac{3.8}{0.2-1} + \frac{3.8}{0.2-1.2} + ...$$
+       * Cuando Xo sea igual que Xn, se ignora ese término en la sumatoria.            
+
+3.	Abrir la sumatoria g(x) respecto al peso baricentrico:
+      * Ejemplo con V en la posición 0:
+      
+          $$Vo = \frac{1}{Xo-X1} + \frac{1}{Xo-X2}+ \frac {1}{Xo-X3} + ...$$
+          $$ Vo = \frac {1}{0.2-0.6} + \frac {1}{0.2-1} + \frac {1}{0.2-1.2} + ... $$
+      *  Cuando Xo sea igual que Xn, se ignora ese término en la sumatoria.
+      
+4. Reemplazar en f(x) y g(x) los pesos baricentricos correspondientes:
+        $$ f(x) = \frac {Wo}{X-0.2} + \frac{W1}{X-0.6} + \frac{W2}{X-1} + ... $$
+        $$ g(x) = \frac {Vo}{X-0.2} + \frac{V1}{X-0.6} + \frac{V2}{X-1} + ...$$
+      * El polinomio de Lagrange baricéntrico es:
+      
+        $$ p(x) = \frac {\frac{Wo}{X-0.2} + \frac{W1}{X-0.6} + \frac{W2}{X-1} + ...}{\frac{Wo}{X-0.2} + \frac{W1}{X-0.6} + \frac{W2}{X-1} + ...}$$
+Por último implementamos el mÃ©todo:
+
+***
+#### Implementación del método de Lagrange Baricéntrico:
+
+```{r}
+require(pracma)
+
+plot(x,y, pch=20, cex=1, col = "black", asp=1,xlab="X", ylab="Y", main="Pato")
+
+Graficar<-function(x0, xn){
+  xi = x[x0:xn]
+  yi = y[x0:xn]
+  x <- seq(x[x0], x[xn], len=20)
+  y <- barylag(xi, yi, x)
+  lines(x, y, col="brown")
+}
+
+
+Graficar (1, 2)
+Graficar (2, 4)
+Graficar (4, 8)
+Graficar (8, 11)
+Graficar (11, 12)
+Graficar (12, 15)
+Graficar (15, 17)
+Graficar (17, 24)
+Graficar (24, 26)
+Graficar (26, 27)
+Graficar (27, 29)
+Graficar (29, 31)
+Graficar (31, 32)
+Graficar (32, 34)
+Graficar (34, 35)
+
+```
+
+
+
+***
+##### Presentado por : Camilo Hoyos y Catalina Morales
