@@ -1,0 +1,105 @@
+---
+title: "AplicaciÃ³n sumas de Riemann"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+El propósito es lograr crear, por medio del uso de R y sus librerías, un programa que permita hallar el área bajo la curva a partir de las sumas de Remann y la función de la distribución normal.
+A continuación se explicará paso a paso el proceso que se siguió.
+
+#####Primer Paso
+Se grafiaca la función de distribución normal
+
+```{r}
+#Grafica
+curve(dnorm(x,0,1),xlim=c(-3,3),col="red",lwd=2,
+      xlab="x",ylab="f(x)",main= "Normal")
+
+```
+
+#####Segundo Paso
+
+Se sacan las particiones para la suma de Riemann, en este caso se hicieron 12 particiones. 
+Luego se calcula el área de los rectangulos por la derecha y por la izquierda, para al final sumar todas las áreas y poder gráficar. 
+Cabe resaltar que al ser una gráfica simétrica, tanto la suma por la derecha y por la izquierda dan el mismo valor.
+
+```{r}
+particiones <- 12 # numero de particiones
+n <- 6/particiones # longitud de las particiones
+
+# Puntos del vector x 
+x <- seq(-3,3,by=n)
+
+#Vector de valores y de el vector x
+y <- c(0,dnorm(x,0,1),0) 
+
+acumulado <- 0
+aux <- 0
+c <- -1
+
+# Ciclo que calcula el area de los rectangulos por derechay los suma
+for(i in 1:12)
+{
+  aux <- n*y[i+2]
+  print(acumulado)
+  acumulado <- acumulado + aux
+}
+print("")
+print("riemman por derecha")
+print(acumulado)
+print("")
+
+# Ciclo que calcula el area de los rectangulos por izquierda y los suma
+acumulado <- 0
+for(i in 2:13)
+{
+  aux <- n*y[i]
+  print(acumulado)
+  acumulado <- acumulado + aux
+}
+
+print("")
+print("riemman por izquierda")
+print(acumulado)
+print("")
+
+```
+
+#####Tercer Paso
+
+Con todos los datos, se realiza la gráfica.
+
+```{r}
+#Grafica
+curve(dnorm(x,0,1),xlim=c(-3,3),col="red",lwd=2,
+      xlab="x",ylab="f(x)",main= "Normal")
+#ciclo que grafica la suma de riemman por derecha
+for(i in 1:12)
+{
+  if(c < 0)
+  {
+    alturax <- c(x[i],x[i])
+    alturay <- c(0,y[i+2])
+    lines (alturax,alturay, col="blue")
+    c <- c+2
+    anchox <- c(x[i],x[i+1])
+    anchoy <- c(y[i+2],y[i+2])
+    lines(anchox,anchoy, col="blue")
+  }
+  if(c > 0)
+  {
+    acumulado <- acumulado + aux
+    alturax <- c(x[i],x[i])
+    alturay <- c(0,y[i+1])
+    lines (alturax,alturay, col="blue")
+    c <- c-2
+  }
+}
+```
+
