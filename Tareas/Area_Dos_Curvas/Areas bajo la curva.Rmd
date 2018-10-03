@@ -1,0 +1,239 @@
+---
+title: "Área de dos curvas"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+El objetivo de siguiente infomre es calcular el área bajo la curva de dos curvas, en este caso de las funciones de seno y de coseno. La siguente implementación se realizo basandonos en el teorema de los trapecios. A continuación se presenta el paso a paso de como se realizo el procedimiento.
+
+####Primer Paso 
+Definimos las funciones a las que se les va a calcular el área bajo la curva.
+
+```{r}
+#Definición de las funciones
+f<-function(x)
+{
+  sin(x)
+}
+
+g<-function(x)
+{
+  cos(x)
+}
+
+```
+
+####Segundo Paso
+Graficamos las funciones. 
+
+```{r}
+#Graficacion de las dos funciones
+
+x <- seq(-pi,pi*2, by = 0.001)
+plot(f, -pi, pi*2, lwd = 3, col = "red")
+lines(x, g(x),lwd = 3, col = "blue")
+```
+
+####Tercer Paso 
+Hacemos las particiones correspondientes para calcular el área bajo la curva y calculamos los valores en "x" y "y", guardando los valores en vectores de las respectivas particiones.
+
+```{r}
+#Número de particiones
+particiones <- 100
+
+#Longitud entre los puntos de las particiones
+n <- (pi+(pi*2))/particiones
+
+#Vector con los valores en x de las particiones
+xi <- seq(-pi,pi*2, by = n)
+
+#Vectores de cada funcion con sus y correspondientes a los valores en x de las particiones
+y1 <- c(f(xi))
+y2 <- c(g(xi))
+
+approx.df <- data.frame(cbind(xi, y1, y2))
+colnames(approx.df) <- c('X', 'Y1', 'Y2')
+approx.df
+```
+
+####Cuarto Paso 
+Buscamos las intersecciones entre las funciones y los cortes en el eje y, cuando este vale 0, en las dos funciones 
+
+```{r}
+#Ciclo que encuentra las intersecciones entre funciones
+xInterseccion <- seq(-pi,pi*2, by = 0.1)
+y1Interseccion <- c(f(xInterseccion))
+y2Interseccion <- c(g(xInterseccion))
+nInsterseccion <- (pi+(pi*2))/0.1
+interseccion <- c(0,0,0)
+contador <- 0
+
+for(i in 1:nInsterseccion)
+{
+  if(y1Interseccion[i] == y2Interseccion[i])
+  {
+    interseccion[contador] <- xInterseccion[i]
+    contador <- contador + 1
+  }
+}
+contador <- 0
+
+#Ciclo que encuentra los cortes con y=0 de las dos funciones
+corteF <- c(0,0)
+corteG <- c(0,0,0)
+contF  <- 0
+contG  <- 0
+  
+for(i in 1:nInsterseccion)
+{
+  if(y1Interseccion[i] == 0)
+  {
+    corteF[contador] <- xInterseccion[i]
+    contF <- contF + 1
+  }
+  if(y2Interseccion[i] == 0)
+  {
+    corteG[contador] <- xInterseccion[i]
+    contG <- contG + 1
+  }
+}
+
+#Imprimir el vector con valores x de las particiones
+print(xi)
+```
+
+####Quinto Paso
+Finalmente calculamos la integral con los puntos de intersección 
+
+```{r}
+contF <- 0
+contF <- 0
+
+#Valores auxiliares
+acumulado <- 0
+aux <-0
+
+#Ciclo que halla la integral entre dos funciones
+for(i in 1:particiones)
+{
+  if( !is.null(xi[i] < interseccion[contador] & interseccion[contador] < xi[i+i]))  ## area cuando no hay interseccion
+{
+  if (!is.null(xi[i] < corteF[contF] & corteF[contF] < xi[i+1] ) )                ## area cuando no hay corte con y = 0 en f(x) 
+  {
+    area1 <- n*((y1[i]+y1[i+1])/2)
+  }
+  if(!is.null(xi[i] < corteG[contG] & corteG[contG] < xi[i+1] ) )                 ## area cuando no hay corte con y = 0 en g(x)
+  {
+    area2 <- n*((y2[i]+y2[i+1])/2)
+  }
+  if (is.null(xi[i] < corteF[contF] & corteF[contF] < xi[i+1])  )                ## area cuando hay corte con y = 0 en f(x) 
+  {
+    v <- x[i+1]-corteF[contF]
+    b1 <- n-v
+    b2 <- v
+    triangulo1 <- (b1*y1[i])/2
+    triangulo2 <- (b2*y1[i+1])/2
+    area1 <- triangulo1 + triangulo2
+    contF <- contF + 1 
+  }
+  if(is.null(xi[i] < corteG[contG] & corteG[contG] < xi[i+1] ) )                 ## area cuando hay corte con y = 0 en g(x)
+  {
+    v <- xi[i+1]-corteG[contG]
+    b1 <- n-v
+    b2 <- v
+    triangulo1 <- (b1*y2[i])/2
+    triangulo2 <- (b2*y2[i+1])/2
+    area1 <- triangulo1 + triangulo2
+    contG <- contG + 1
+  }
+  if(area1*area2 < 0)
+  {
+    print("opuestos")
+    aux <- area1+area2
+    print(aux)
+  }
+    
+  if(area1*area2 > 0)
+  {
+    if(y1[i] > 0 )
+    {
+      ifelse(area1 > area2, aux <- area1-area2, aux <- area2-area1)
+    }
+    if(y1[i] < 0)
+    {
+      ifelse(area1 < area2, aux <- area1-area2, aux <- area2-area1)
+    }
+  }
+}
+
+if( is.null(xi[i] < interseccion[contador] & interseccion[contador] < xi[i+i]))   ## area cuando hay interseccion de curvas
+{
+  print("inter")
+  v <- xi[i+1]-interseccion[contador]
+  h1 <- n-v
+  h2 <- v
+  trapecioF1 <- h1*((y1[i]+f(interseccion[contador]))/2)
+  trapecioF2 <- h2*((y1[i]+f(interseccion[contador]))/2)
+  trapecioG1 <- h1*((y2[i]+f(interseccion[contador]))/2)
+  trapecioG2 <- h2*((y2[i]+f(interseccion[contador]))/2)
+  
+  trapecioF <- trapecioF1 + trapecioF2
+  trapecioG <- trapecioG1 + trapecioG2
+  aux <- trapecioF + trapecioG
+}
+
+  ifelse(-0.0001 < acumulado & acumulado < 0.0001, acumulado <- 0 , acumulado <- acumulado + aux )
+  
+
+print("area1")
+print(area1)
+print("area2")
+print(area2)
+print("aux")
+print(aux)
+print("acumulado")
+print(acumulado)
+print("-----")
+}
+
+print("Total: ")
+print(acumulado)
+
+
+```
+
+####Gráfica
+Gráfica con la integral calculada, en base a las áreas bajo la curva.
+
+```{r}
+plot(f, -pi, pi*2, lwd = 3, col = "red")
+lines(x, g(x),lwd = 3, col = "blue")
+
+vectorx <- c(-pi, pi*2)
+vectory <- c(0,0)
+lines(vectorx,vectory)
+
+for(i in 1:particiones)
+{
+  ax <- c(xi[i],xi[i])
+  ay1 <- c(0,y1[i])
+  ay2 <- c(0,y2[i])
+  bx <- c(xi[i+1],xi[i+1])
+  by1 <- c(0,y1[i+1])
+  by2 <- c(0,y2[i+1])
+  hx <- c(xi[i],xi[i+1])
+  hy1 <- c(y1[i],y1[i+1])
+  hy2 <- c(y2[i],y2[i+1])
+  lines(ax,ay1,lwd = 2, col="red")
+  lines(bx,by1, col="red")
+  lines(hx,hy1, col="red")
+  lines(ax,ay2, col="blue")
+  lines(bx,by2, col="blue")
+  lines(hx,hy2, col="blue")
+}
+
+```
+
