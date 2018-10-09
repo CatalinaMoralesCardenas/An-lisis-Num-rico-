@@ -1,0 +1,76 @@
+---
+title: "La Curva de Koch"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+A continuación se pretende calcular la longitud de la curva de koch. Para esto nos vamos a basar en la teoría de los fractales.
+
+Primero vamos a ver como es la curva de Koch, para ello usamos la libreria turtle.
+
+```{r}
+library("TurtleGraphics")
+
+
+koch <- function(s=50, n=6) {
+  if (n <= 1)
+    turtle_forward(s)
+  else {
+    koch(s/3, n-1)
+    turtle_left(60)
+    koch(s/3, n-1)
+    turtle_right(120)
+    koch(s/3, n-1)
+    turtle_left(60)
+    koch(s/3, n-1)
+  }
+}
+
+turtle_init(600, 400, "error")
+turtle_do({
+  turtle_up()
+  turtle_left(90)
+  turtle_forward(250)
+  turtle_right(180)
+  turtle_down()
+  koch(500, 6)
+})
+```
+
+
+Luego se define el método de Koch, el cual va a ser la formula que calcula la longitud de área bajo la curva de koch.
+
+$$ \frac {4^n}{3^(n-1)}$$
+```{r}
+koch <- function(n)
+{
+  a<- 4^n
+  b<- 3^(n-1)
+  c<- a/b
+  return (c)
+}
+```
+
+Por último ya es solo aplicar esta formula para calcular la longitud dado un número de fractales.
+
+```{r}
+k<- 3
+
+fractal<-0
+numfractales<-0
+longitud<-0
+
+for (n in 1:5)
+{
+  fractal[n] <- koch(n)
+  numfractales[n] <- k*4^n
+  longitud[n] <- fractal[n]*numfractales[n]
+}
+approx.df <- data.frame(cbind(fractal,numfractales,longitud))
+colnames(approx.df) <- c('Longitud Fractal', 'Número Fractales en la Figura ', 'Longitud de Curva')
+approx.df
+```
+
