@@ -1,0 +1,427 @@
+---
+title: "Taller"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Taller EDO
+####Realizado por: Camilo Hoyos y Catalina Morales
+
+A continuación se muestra la resolución del taller de Ecuaciones Diferenciales
+
+##Primer Punto 
+$$  \frac{dT}{dt} = \frac{-EyS(T^4(t)-(T_e)^4)}{mC}$$
+
+Usando el método de Euler (en R) y 20 intervalos iguales y t variando de 0 a 200
+segundos, resuelva numéricamente la ecuación, si el cuerpo es un cubo de lados de
+longitud 1m y masa igual a 1Kg. Asuma, que T0 = 180K, Te = 200K, y = 0.5 y C =
+100J/(Kg/K). Hacer una representación gráfica del resultado.
+
+##Solución
+Primero hallamos S (área de la superficie), como sabemos que el cuerpo es un cubo decimos que:
+
+$$ S = 6 * longitud^2 -> S = 6 * (1)^2  -> S = 6m^2$$
+
+Reemplazamos los valores dados en la formula con el fin de simplificarlo y obtenemos:
+
+$$  \frac{dT}{dt} = -1.68*10^{-9} *T(t)^4+2.6880 $$
+
+Luego introducimos la formula en el método de Euler y graficamos la representación del resultado.
+
+```{r}
+library(pracma)
+metodoEuler <- function(f, h, xi, yi, xf)
+{
+  N = (xf - xi) / h
+  x = y = numeric(N+1)
+  x[1] = xi; 
+  y[1] = yi;
+  i = 1
+  while (i <= N)
+  {
+    x[i+1] = x[i]+h
+    y[i+1] = y[i]+(h*f(x[i],y[i]))
+    i = i+1
+  }
+  return (data.frame(X = x, Y = y))
+}
+
+f <- function(t, v) 
+{
+  a <- -1.68e-9*v^4+2.688
+  return(a)
+}
+
+e1 = metodoEuler(f ,10, 0, 180, 200)
+e1[nrow(e1),]
+print(e1)
+xx <- c(0, 200)
+yy <- c( 180, 200)
+vectorfield(f, xx, yy, scale = 20)
+for (xs in seq(0, 200, by = 10.5)) 
+{
+  sol <- rk4(f, 0, 200, xs, 100)
+  lines(sol$x, sol$y, col="purple")
+}
+```
+
+##Segundo Punto
+Obtenga cinco puntos de la solución de la ecuación, utilizando el método de Taylor (los tres primeros términos) con h=0.1 implemente en R. Grafique su solución y compare con la solución exacta, cuál es el error de truncamiento
+en cada paso
+
+$$ \frac{dy}{dx} - (x+y) = 1-x^2 ; y(0)=1 $$
+##Solución
+Primero solucionamos la ecuación diferencial:
+
+$$ h = 0.1; y(0)=1; y'(0)=2; y''(0)=3 $$
+$$y'(x)=1-x^2+x+y$$
+$$y''(x)=-2x+1+y'$$
+$$y''(x)=-2x+1+(1-x^2+x+y)$$
+$$y=y(0)+y'(0)x+\frac{1}{2}x^2f''(0)$$
+$$y=1+2x+\frac{3}{2}x^2$$
+Ahora implementamos en R la solución , graficamos y hallamos el error de truncamiento.
+
+```{r}
+library(pracma)
+
+#Funcion original
+f <- function(x,y) 
+{
+  a <- 2*x
+  b <- (x^3)/3
+  c <- (x^2)/2
+  d <- a-b+c+1
+  return(d)
+}
+
+#Taylor manual
+g <- function(x)
+{
+  a <- 1+2*x+(3/2)*x^2
+  return(a)
+}
+
+#Taylor en R
+p = taylor(f, 0, n = 2)
+
+#Valores de Taylor
+print("Valores de Taylor: ")
+xi <- seq(0,1,0.1)
+xii<-0
+for (i in 1:5)
+  xii[i]=xi[i]
+
+print(data.frame(X = xii, Y = polyval(p,xii)))
+
+#Error de truncamiento
+error<-0
+tayr<-0
+taym<-0
+for (i in 1:5)
+{
+  tayr[i] = polyval(p,xii[i])
+  taym[i] = g(xii[i])
+  error[i] = abs(tayr[i]-taym[i])
+}
+
+#Graficas
+#En negro la función original y(x)
+#En rojo el metodo de taylor por maquina
+#En azul el metodo de taylor manual
+x <- seq(-4, 4, length.out=100)
+y <- f(x)
+yp <- polyval(p, x)
+plot(x, y, type = "l", col = "black", lwd = 3)
+lines(x, yp, col = "red", lwd = 3)
+lines(x, g(x), col = "blue" ,lwd = 3)
+legend("top",legend=c("Función original","Taylor en r","Taylor Manual"),pch="-",col=c("black","red","blue"),bty="n",pt.cex = 2,cex = 1)
+print("-----------------")
+print("Valores con paso de  h = 0.1")
+
+approx.df <- data.frame(cbind(tayr,taym,error))
+colnames(approx.df) <- c('Exacta', 'Manual', "Error")
+approx.df
+```
+
+##Tercer Punto
+Obtenga 20 puntos de la solución de la ecuación, utilizando el método de Euler (los tres primeros términos) con h=0.1. Grafique su solución y compare con la solución exacta, cuál es el error de truncamiento en cada paso.
+
+$$ \frac{dy}{dx} - (x+y) = 1-x^2 ; y(0)=1 $$
+##Solución 
+Basados en el punto anterior ya sabemos que la solución de la ecuación es:
+
+$$ h = 0.1; y(0)=1; y'(0)=2; y''(0)=3 $$
+
+$$y'(x)=1-x^2+x+y$$
+
+Ahora reemplazamos la ecuación en el método de Euler, graficamos y hallamos el error de truncamiento en cada paso.
+```{r}
+library(pracma)
+
+f <- function(x, y) {x+y+1-x^2}
+
+#Error de truncamiento
+truncamiento<-function(dy,y)
+{
+  error<-0
+  fu<-dy
+  fui<-y
+  for (i in 1:length(y))
+  {
+    error[i] = abs(fu[i]-fui[i])
+  }
+  return (error)
+}
+
+##Método de Euler
+metodoEuler <- function(f, h, xi, yi, xf)
+{
+  N = (xf - xi) / h
+  x = y = numeric(N+1)
+  x[1] = xi; 
+  y[1] = yi;
+  i = 1
+  while (i <= N)
+  {
+    x[i+1] = x[i]+h
+    y[i+1] = y[i]+(h*f(x[i],y[i]))
+    i = i+1
+  }
+  error<-truncamiento(f(x,y),y)
+  return (data.frame(DY = f(x,y), X = x, Y = y, Error = error))
+}
+
+e1 = metodoEuler(f, 0.1, 0, 1, 2)
+print(e1)
+e1[nrow(e1),]
+
+
+#Valores de y
+plot(e1$X,e1$Y, type='l', lwd=2, col='red', main="Euler",xlab="X", ylab="Y")
+#Valores de las derivadas
+lines(e1$X, e1$DY, col = "black", lwd = 3)
+legend("topleft",legend=c("Derivada","Método Euler"),pch="-",col=c("black","red"),bty="n",pt.cex = 2,cex = 1)
+```
+
+##Cuarto Punto
+Implemente en R el siguiente algoritmo y aplíquelo para resolver la ecuación anterior
+
+##Solución
+```{r}
+f <- function(x, y) {x+y+1-x^2}
+x0 <- 0
+y0 <- 1
+h <- 0.1
+m <- 20
+x <- c(x0)
+y <- c(y0)
+
+for(i in 1:m)
+{
+ k1 <- h*f(x0,y0)
+ k2 <- h*f(x0+h, y0+k1)
+ y0 <- y0+(1/2)*(k1+k2)
+ x0 <- x0+h
+ x <- c(x,x0)
+ y <- c(y,y0)
+}
+
+print(data.frame(X = x, Y = y))
+plot(x, y, type = "l", col = "purple", lwd = 3)
+```
+
+##Quinto Punto
+Utilizar la siguiente variación en el método de Euler, para resolver una ecuación diferencial ordinaria de primer orden, la cual calcula el promedio de las pendientes en cada paso
+
+$$y_{i+1} = y_i + \frac{h}{2} (f(x_i,y_i)+f(x_{i+1},y_{i+1}))$$
+Implemente un código en R, para este método y obtenga 10 puntos de la solución con h=0.1,
+grafíquela y compárela con el método de Euler:
+
+$$\frac{dy}{dx}-x-y-1+x^2=0 \space\space;\space y(0)=1$$
+
+##Solución
+Primero despejamos la ecuación 
+
+$$y'(x)=1-x^2+x+y$$
+
+Después reemplazamos en el método de Euler modificado y en el método normal (usado anteriormente), graficamos y comparamos los resultados para 10 valores.
+
+```{r}
+library(pracma)
+
+#Ecuación
+f <- function(x, y) {x+y+1-x^2}
+
+#Método de Euler modificado
+metodoEulerMod <- function(f, h, xi, yi, xf)
+{
+  N = (xf - xi) / h
+  x = y = numeric(N+1)
+  x[1] = xi; 
+  y[1] = yi;
+  i = 1
+  while (i <= N)
+  {
+    x[i+1] = x[i]+h
+    y[i+1] = y[i]+(h/2*(f(x[i],y[i])+f(x[i+1],y[i+1])))
+    i = i+1
+  }
+  return (data.frame(X = x, Y = y))
+}
+
+e2 = metodoEulerMod(f, 0.1 , 0, 1, 1)
+e2[nrow(e2),]
+
+#Método de Euler sin modificar
+metodoEuler <- function(f, h, xi, yi, xf)
+{
+  N = (xf - xi) / h
+  x = y = numeric(N+1)
+  x[1] = xi; 
+  y[1] = yi;
+  i = 1
+  while (i <= N)
+  {
+    x[i+1] = x[i]+h
+    y[i+1] = y[i]+(h*f(x[i],y[i]))
+    i = i+1
+  }
+  return (data.frame(X = x, Y = y))
+}
+
+e1 = metodoEuler(f, 0.1, 0, 1, 1)
+e1[nrow(e1),]
+
+#Tabla de datos
+approx.df <- data.frame(cbind(e2,e1))
+colnames(approx.df) <- c('X','Euler Modificado','X' ,'Euler')
+approx.df
+
+#Grafica de los dos métodos
+plot(e2$X,e2$Y, type='l', lwd=2,main="Euler", col='red', xlab="X", ylab="Y")
+lines(e1$X,e1$Y, type='l', lwd=2, col='blue',xlab="X", ylab="Y")
+legend("topleft",legend=c('Euler Modificado','Euler'),pch="-",col=c("red","Blue"),bty="n",pt.cex = 2,cex = 1)
+
+
+```
+
+##Septimo Punto
+Pruebe el siguiente código en R del método de Runge Kutta de tercer y cuarto orden y obtenga 10 puntos
+de la solución con h=0.1, grafíquela y compárela con el método de Euler:
+
+$$\frac{dy}{dx}-x-y-1+x^2=0 \space\space;\space y(0)=1$$
+
+##Solución
+Ya sabemos que la ecuación diferencial es
+
+$$y'(x)=1-x^2+x+y$$
+
+Luego ingresamos la ecuación el método de Runge Kutta de 3er orden, 4to orden y Euler, graficamos y comparamos los valores dados. Cabe resaltar que como Runge Kutta de 3er orden, 4to orden dan los mismos valores una linea se sobrepone a la otra en la gráfica por eso no se pueden apreciar las tres lineas en la gráfica.
+
+```{r}
+list.of.packages <- c("phaseR")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+library(phaseR)
+
+f<-function(fcn,x,y){
+  return(eval(fcn))
+}
+
+# Solo para prueba con dy=x+y, y(0)=1
+obtenerErrorAbsoluto<-function(x,y){
+  solucion=exp(x)*((-x*exp(-x))-exp(-x)+2)
+  return(abs(y-solucion))
+}
+
+graficarCampoPendiente<-function(x0, xn, y0, yn, fcn, numpendientes, metodo){
+  apma1 <- function(t, y, parameters){
+    a <- parameters[1] 
+    dy <- a*(f(fcn, t, y))
+    list(dy)
+  } 
+  apma1.flowField <- flowField(apma1, x = c(x0, xn), 
+                               y   = c(y0, yn), parameters = c(1), 
+                               points = numpendientes, system = "one.dim", 
+                               add = FALSE, xlab = "x", ylab = "y", 
+                               main = metodo)
+  grid()
+}
+
+graficarSolucionNumerica<-function (x, y){
+  points (x, y, pch=20, col="black")
+  for (i in 2:length(x)){
+    segments(x[i-1], y[i-1], x[i], y[i], col="red")
+  }
+}
+
+rk4<-function(dy, ti, tf, y0, h, graficar=TRUE, numpendientes=10){
+  t<-seq(ti, tf, h)
+  y<-c(y0)
+  cat("x    |y         |k1        |k2        |k3        |k4       |error absoluto\n")
+  for(i in 2:length(t)){
+    k1=h*f(dy, t[i-1], y[i-1])
+    k2=h*f(dy, t[i-1]+h/2, y[i-1]+k1*(0.5))
+    k3=h*f(dy, t[i-1]+h/2, y[i-1]+k2*(0.5))
+    k4=h*f(dy, t[i-1]+h, y[i-1]+k3)
+    y<-c(y, y[i-1]+1/6*(k1+2*k2+2*k3+k4))
+    cat(t[i-1]," | ", y[i-1]," | ",k1," | ",k2," | ",k3," | ",k4," | ",obtenerErrorAbsoluto(t[i-1],y[i-1]),"\n")
+  }
+  if (graficar){
+    graficarCampoPendiente(min(t), max(t), min(y), max(y), dy, numpendientes, "Runge Kutta 3 Vs Runge Kutta 4 Vs Euler")
+    graficarSolucionNumerica(t, y)
+  }
+  rta<-list(w=y, t=t)
+}
+
+rk3<-function(dy, ti, tf, y0, h, graficar=TRUE, numpendientes=10){
+  t<-seq(ti, tf, h)
+  y<-c(y0)
+  cat("x    |y         |k1         |k2        |k3       |error absoluto\n")
+  for(i in 2:length(t)){
+    k1=h*f(dy, t[i-1], y[i-1])
+    k2=h*f(dy, t[i-1]+h/2, y[i-1]+k1*(0.5))
+    k3=h*f(dy, t[i-1]+h, y[i-1]-k1+2*k2)
+    y<-c(y, y[i-1]+1/6*(k1+4*k2+k3))
+    cat(t[i-1]," | ", y[i-1]," | ",k1," | ",k2," | ",k3," | ",obtenerErrorAbsoluto(t[i-1],y[i-1]),"\n")
+  }
+  rta<-list(w=y, t=t)
+}
+
+r<-rk4(expression(1-x^2+x+y), 0, 1, 1, 0.1)
+
+r2<-rk3(expression(1-x^2+x+y), 0, 1, 1, 0.1)
+
+metodoEuler <- function(f, h, xi, yi, xf)
+{
+  N = (xf - xi) / h
+  x = y = numeric(N+1)
+  x[1] = xi; 
+  y[1] = yi;
+  i = 1
+  while (i <= N)
+  {
+    x[i+1] = x[i]+h
+    y[i+1] = y[i]+(h*f(x[i],y[i]))
+    i = i+1
+  }
+  return (data.frame(X = x, Y = y))
+}
+
+f <- function(x, y) {1-x^2+x+y}
+
+e1 = metodoEuler(f, 0.1, 0, 1, 1)
+print(e1)
+e1[nrow(e1),]
+
+lines(e1$X,e1$Y, type='l', lwd=2, col='blue', xlab="X", ylab="Y")
+lines(r2$t,r2$w, type='l', lwd=2, col='yellow', xlab="X", ylab="Y")
+legend("topleft",legend=c('Runge Kutta 3er orden','Runge Kutta 4to orden', 'Euler'),pch="-",col=c("yellow","red","blue"),bty="n",pt.cex = 2,cex = 1)
+```
+
